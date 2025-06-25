@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HeartCare Predictor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #ffe6e6; }
+    nav { background-color: #b30000; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+    nav .logo { font-size: 1.5em; font-weight: bold; }
+    nav .nav-links a { margin: 0 15px; color: white; text-decoration: none; font-weight: bold; }
+    section { padding: 40px 20px; }
+    .banner {
+      text-align: center;
+      background-image: url('https://familiestogetheroc.org/wp-content/uploads/2023/01/hands-holding-red-heart-with-stethoscope-heart-health-health-insurance-concept-scaled.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 80vh;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .banner h1 { font-size: 2.5rem; text-shadow: 2px 2px 5px #000; margin-bottom: 1px; }
+    .banner p {font-size:1.5rem ;text-shadow: 2px 2px 5px #000; margin-bottom: 20px; }
+    .banner button { background-color: #cc0000; color: white; border: none; padding: 12px 25px; font-size: 1rem; border-radius: 5px; cursor: pointer; }
+    .banner button:hover { background-color: #990000; }
+    .guide { background-color: #fd7c7c; }
+    .guide h2 { text-align: center; color: #cc0000; margin-bottom: 30px; }
+    .guide-content { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; }
+    .guide-content img { width: 120px; }
+    .form-container {
+      background: linear-gradient(to right, #fff5f5, #ffe6e6);
+      max-width: 700px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .form-container h2 {
+      text-align: center;
+      color: #cc0000;
+      margin-bottom: 20px;
+    }
+    .form-container label { display: block; margin-top: 15px; font-weight: bold; color: #990000; }
+    .form-container input, .form-container select {
+      width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cc9999; border-radius: 5px;
+    }
+    .form-container button {
+      background-color: #cc0000; color: white; border: none; padding: 12px 20px;
+      font-size: 1rem; border-radius: 5px; margin-top: 20px; cursor: pointer;
+    }
+    .form-container button:hover { background-color: #990000; }
+    .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+    .popup-content { background: white; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px; }
+    .popup-content button {
+      background-color: #cc0000; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px;
+    }
+    .health-tips { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
+    .tip { background: #fff0f0; padding: 20px; border-radius: 10px; width: 250px; text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .tip img { width: 80px; margin-bottom: 10px; }
+    footer { background-color: #990000; color: white; text-align: center; padding: 10px; }
+    footer a { color: #fff; text-decoration: underline; }
+  </style>
+</head>
+<body>
+    {% set prediction_text = prediction_text or '' %}
+{% set advice = advice or '' %}
+
+  <nav>
+    <div class="logo"><i class="fas fa-heartbeat"></i> HeartCare</div>
+    <div class="nav-links">
+      <a href="#home">Home</a>
+      <a href="#checkup">Check Up</a>
+      <a href="#health">Healthy Info</a>
+    </div>
+  </nav>
+
+  <section class="banner" id="home">
+    <h1>Welcome to HeartCare Predictor</h1>
+    <p>Don’t wait for symptoms—know your risk now.
+Simple steps today for a stronger tomorrow.</p>
+    <button onclick="document.getElementById('checkup').scrollIntoView({behavior: 'smooth'})">Start Checkup</button>
+  </section>
+
+  <section class="guide">
+    <h2>How to Use HeartCare Predictor</h2>
+    <div class="guide-content">
+      <div><img src="https://img.icons8.com/fluency/96/heart-with-pulse.png" /><p>1.Open the Checkup form</p></div>
+      <div><img src="https://img.icons8.com/fluency/96/edit-property.png" /><p>2. Fill all details carefully</p></div>
+      <div><img src="https://img.icons8.com/fluency/96/checked.png" /><p>3. Submit & get your results</p></div>
+    </div>
+  </section>
+
+  <section id="checkup">
+    <div class="form-container">
+      <h2>Checkup Form</h2>
+      <form id="predictForm" action="{{ url_for('predict') }}" method="POST">
+        <label>Name:</label>
+        <input type="text" name="name" required>
+        <label>Enter age:</label>
+        <input type="number" name="age" required>
+        <label>Enter gender (0 = Female, 1 = Male):</label>
+        <input type="number" name="sex" required>
+        <label>Chest pain type (0: typical angina, 1: atypical angina, 2: non-anginal, 3: asymptomatic):</label>
+        <input type="number" name="cp" required>
+        <label>Resting blood pressure (mm Hg):</label>
+        <input type="number" name="trestbps" required>
+        <label>Cholesterol (mg/dl):</label>
+        <input type="number" name="chol" required>
+        <label>Fasting blood sugar > 120? (1 = yes, 0 = no):</label>
+        <input type="number" name="fbs" required>
+        <label>Resting ECG result (0, 1, or 2):</label>
+        <input type="number" name="restecg" required>
+        <label>Maximum heart rate:</label>
+        <input type="number" name="thalach" required>
+        <label>Exercise induced angina? (1 = yes, 0 = no):</label>
+        <input type="number" name="exang" required>
+        <label>ST depression (0 - 5):</label>
+        <input type="number" name="oldpeak" step="0.1" required>
+        <label>Slope of peak ST (0: upsloping, 1: flat, 2: downsloping):</label>
+        <input type="number" name="slope" required>
+        <label>No. of major vessels (0 - 3):</label>
+        <input type="number" name="ca" required>
+        <label>Thalassemia (0: normal, 1: fixed, 2: reversible):</label>
+        <input type="number" name="thal" required>
+        <button type="submit">Predict</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="health" style="background-color: #fd7c7c; padding: 60px 20px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 40px;">
+      <img src="https://th.bing.com/th/id/OIP.d1ecaF5efgDIdC-zgDVFLgHaE7?w=232&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3" alt="Heart" style="max-width: 300px; width: 100%;">
+      <div style="max-width: 500px;">
+        <h2 style="color: #cc0000;">Why Early Detection Matters</h2>
+        <p>Heart disease can often develop silently, without noticeable symptoms until it becomes severe. Early detection gives you the advantage of addressing risk factors through lifestyle adjustments and medical care. By identifying warning signs sooner, you can prevent complications and improve long-term outcomes. Our predictor tool empowers you with insights that support proactive health decisions. It's simple, fast, and can make a life-saving difference.</p>
+      </p></div>
+    </div>
+  </section>
+
+  <section style="background-color: #fd7c7c; padding: 60px 20px;">
+    <div style="display: flex; flex-wrap: wrap-reverse; align-items: center; justify-content: center; gap: 40px;">
+      <div style="max-width: 500px;">
+        <h2 style="color: #b30000;">Your Heart Deserves Attention</h2>
+        <p>Your heart is the engine of your body, and caring for it is crucial in today’s fast-paced lifestyle. With increased stress, unhealthy diets, and sedentary habits, cardiovascular risks are growing even among the young. Regular heart checkups are no longer optional—they’re essential. Our tool helps you stay informed about your heart health in a few clicks. Don't wait for symptoms—take charge now for a healthier future.</p>
+      </p></div>
+      <img src="https://th.bing.com/th/id/OIP.rW0ORBonB-eD4MSuu4Y1eQHaHa?pid=ImgDet&w=184&h=184&c=7&dpr=1.3" alt="Monitor" style="max-width: 300px; width: 100%;">
+    </div>
+  </section>
+
+ <div class="popup" id="resultPopup">
+  <div class="popup-content">
+    <h3 id="resultMessage">{{ prediction_text }}</h3>
+    <p>{{ advice }}</p>
+    <button onclick="document.getElementById('health').scrollIntoView({behavior: 'smooth'}); document.getElementById('resultPopup').style.display='none';">See Health Tips</button>
+  </div>
+</div>
+
+
+  <section >
+    <h2 style="text-align:center; color:#b30000;">Healthy Heart Habits</h2>
+    <div class="health-tips">
+      <div class="tip">
+        <img src="https://img.icons8.com/fluency/96/vegetarian-food.png" />
+        <p>Eat heart-friendly food: fruits, vegetables, and whole grains.</p>
+      </div>
+      <div class="tip">
+        <img src="https://img.icons8.com/fluency/96/running.png" />
+        <p>Stay active: at least 30 minutes of exercise daily.</p>
+      </div>
+      <div class="tip">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMjcGuXs5v48eASxOOHMi9aap6w3kLnloAKw&s" />
+        <p>Reduce stress with breathing, meditation, and rest.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <h3>HeartCare Predictor</h3>
+    <p>&copy; 2025 HeartCare | All rights reserved.</p>
+  </footer>
+
+  <script>
+  window.onload = function () {
+    const resultPopup = document.getElementById("resultPopup");
+    const hasPrediction = "{{ prediction_text }}" !== "";
+    if (hasPrediction) {
+      resultPopup.style.display = "flex";
+    }
+  };
+</script>
+
+</body>
+</html>
